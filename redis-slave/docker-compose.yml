@@ -1,10 +1,17 @@
 version: '3'
 services:
-  redis-master:
-    image: redis
-    ports:
-      - "32768:6379"
-  redis-slave:
-    image: redis
-    ports:
-      - "32769:6379"
+  master:
+    image: redis:3
+  slave:
+    image: redis:3
+    command: redis-server --slaveof redis-master 6379
+    links:
+      - master:redis-master
+  sentinel:
+    build: sentinel
+    environment:
+      - SENTINEL_DOWN_AFTER=5000
+      - SENTINEL_FAILOVER=5000    
+    links:
+      - master:redis-master
+      - slave

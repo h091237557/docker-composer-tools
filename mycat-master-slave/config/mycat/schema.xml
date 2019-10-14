@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<!DOCTYPE mycat:schema SYSTEM "schema.dtd">
+<mycat:schema xmlns:mycat="http://io.mycat/">
+
+	<!-- 1. 定義 mycat 邏輯資料庫 -->
+	<schema name="db" checkSQLschema="false" sqlMaxLimit="100" dataNode="db-node" />
+
+	<!-- 2. 定義 mycat 邏輯資料節點 -->
+	<dataNode name="db-node" dataHost="db-host" database="test" />
+
+	<!-- 3. 定義實際使用資料庫   -->
+	<dataHost name="db-host" maxCon="1000" minCon="10" balance="1"
+			  writeType="0" dbType="mysql" dbDriver="native" switchType="-1" slaveThreshold="100">
+		<heartbeat>select user()</heartbeat>
+		<!-- 4. 定義實際使用資料庫位置 (讀)  -->
+		<writeHost host="writer" url="192.168.0.10:3306" user="root" password="pass">
+			<!-- 5. 定義實際使用資料庫位置 (讀)  -->
+			<readHost host="reader" url="192.168.0.20:3306" user="root" password="pass" />
+		</writeHost>
+	</dataHost>
+
+</mycat:schema>

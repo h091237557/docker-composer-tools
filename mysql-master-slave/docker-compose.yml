@@ -1,0 +1,35 @@
+version: '2'
+
+services:
+  mysql-master:
+    image: 'bitnami/mysql:5.7'
+    ports:
+      - '33061:3306'
+    volumes:
+      - './mysql/write/:/bitnami/mysql/data'
+    environment:
+      - MYSQL_REPLICATION_MODE=master
+      - MYSQL_REPLICATION_USER=repl_user
+      - MYSQL_USER=mark
+      - MYSQL_DATABASE=my_database
+      # ALLOW_EMPTY_PASSWORD is recommended only for development.
+      - ALLOW_EMPTY_PASSWORD=yes
+      - MYSQL_ROOT_PASSWORD=pass
+  mysql-slave:
+    image: 'bitnami/mysql:5.7'
+    ports:
+      - '33062:3306'
+    volumes:
+      - './mysql/read/:/bitnami/mysql/data'
+    depends_on:
+      - mysql-master
+    environment:
+      - MYSQL_REPLICATION_MODE=slave
+      - MYSQL_REPLICATION_USER=repl_user
+      - MYSQL_USER=mark
+      - MYSQL_DATABASE=my_database
+      - MYSQL_MASTER_HOST=mysql-master
+      - MYSQL_MASTER_PORT_NUMBER=3306
+      - MYSQL_MASTER_ROOT_PASSWORD=pass
+      # ALLOW_EMPTY_PASSWORD is recommended only for development.
+      - ALLOW_EMPTY_PASSWORD=yes

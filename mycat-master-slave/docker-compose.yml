@@ -1,0 +1,61 @@
+version: '3'
+
+services:
+  mysql_write:
+    image: 'bitnami/mysql:5.7' 
+    ports:
+      - 33061:3306
+    networks:
+      db:
+        ipv4_address: 192.168.0.10
+    environment:
+      - MYSQL_REPLICATION_MODE=master
+      - MYSQL_REPLICATION_USER=repl_user
+      - MYSQL_USER=mark
+      - MYSQL_DATABASE=test
+      - ALLOW_EMPTY_PASSWORD=yes
+      - MYSQL_ROOT_PASSWORD=pass
+    volumes:
+      - ./mysql/write/:/etc/mysql/conf.d
+      - ./config/hosts:/etc/hosts:ro
+  mysql_read:
+    image: 'bitnami/mysql:5.7' 
+    ports:
+      - 33062:3306
+    networks:
+      db:
+        ipv4_address: 192.168.0.20
+    environment:
+      - MYSQL_REPLICATION_MODE=slave
+      - MYSQL_REPLICATION_USER=repl_user
+      - MYSQL_USER=mark
+      - MYSQL_DATABASE=test
+      - MYSQL_MASTER_HOST=192.168.0.10
+      - MYSQL_MASTER_PORT_NUMBER=3306
+      - MYSQL_MASTER_ROOT_PASSWORD=pass
+      - ALLOW_EMPTY_PASSWORD=yes
+    volumes:
+      - ./mysql/read/:/etc/mysql/conf.d
+      - ./config/hosts:/etc/hosts:ro
+  mycat:
+    image: 'qiyue/mycat:1.6.5'
+    volumes:
+      - ./config/mycat/:/usr/local/mycat/conf/
+      - ./log/mycat-logs/:/mycat/logs/:rw
+    ports:
+      - "8066:8066"
+      - "9066:9066"
+    networks:
+      db:
+        ipv4_address: 192.168.0.5
+    ulimits:
+      nproc: 65535
+    hostname: mycat
+    restart: always
+networks:
+    db:
+      driver: bridge
+      ipam:
+        driver: default
+        config:
+          - subnet: 192.168.0.0/24
